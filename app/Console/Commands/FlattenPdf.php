@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use Imagick;
+use Mpdf\Mpdf;
 
 class FlattenPdf extends Command
 {
@@ -59,6 +60,14 @@ class FlattenPdf extends Command
             $img->clear();
             $img->destroy();
             Storage::disk('new_pdf')->put($old_file, $pdf_bin);
+
+            $pdf = new mPDF(['format' => 'A4-L']);
+            $pagecount = $pdf->SetSourceFile(Storage::disk('new_pdf')->path($old_file));
+            $tplId = $pdf->ImportPage($pagecount);
+            $pdf->UseTemplate($tplId);
+            $bin = $pdf->Output($old_file, "S");
+
+            Storage::disk('new_pdf')->put($old_file, $bin);
 
             $progressBar->advance();
         }
