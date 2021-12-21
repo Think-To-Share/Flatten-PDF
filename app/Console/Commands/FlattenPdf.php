@@ -51,25 +51,15 @@ class FlattenPdf extends Command
             $img->readImage($file);
             $img->setImageBackgroundColor('white');
             $img->setImageAlphaChannel(Imagick::ALPHACHANNEL_REMOVE);
-            $img->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
+            $img->mergeImageLayers(Imagick::LAYERMETHOD_MERGE);
             $img->scaleImage(2400, 0);
             $img->setImageProperty('Exif:Make', 'Imagick2');
-            $img->setImageFormat('png');
-            $image_bin = $img->getImageBlob();
+            $img->setImageFormat('pdf');
+            $pdf_bin = $img->getImageBlob();
             $img->clear();
             $img->destroy();
-
-            $temp_img = tmpfile();
-            fwrite($temp_img, $image_bin);
-
-            $pdf = new Imagick(stream_get_meta_data($temp_img)['uri']);
-            $pdf->setImageFormat('pdf');
-            $pdf_bin = $pdf->getImageBlob();
-            $pdf->clear();
-            $pdf->destroy();
             Storage::disk('new_pdf')->put($old_file, $pdf_bin);
 
-            fclose($temp_img);
             $progressBar->advance();
         }
 
